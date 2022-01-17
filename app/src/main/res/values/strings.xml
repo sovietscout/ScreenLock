@@ -1,0 +1,23 @@
+<resources>
+    <string name="app_name">Screen Lock</string>
+
+    <string name="toggle">Toggle Overlay</string>
+
+    <string name="notification_title">Displaying over other apps</string>
+    <string name="notification_text">Tap to close</string>
+
+    <!-- Alert Dialog strings -->
+
+    <string name="menuAD_title">Display over other apps</string>
+    <string name="menuAD_text">Overlay permission is required for the app to function. Please enable it in the next
+        screen
+    </string>
+    <string name="menuAD_pos">OK</string>
+
+    <string name="buttonAD_title">Quick Settings</string>
+    <string name="buttonAD_pos">OK</string>
+    <string name="buttonAD_neg">Stop</string>
+    <string name="buttonAD_neu">Settings</string>
+    <string name="buttonAD_wake_lock">Keep screen on</string>
+    <string name="buttonAD_invisible">Temporarily disable</string>
+</resources>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Button Appearance -->
+    <string name="button_position_key">position_pref</string>
+    <string name="button_size_key">size_pref</string>
+    <string name="button_edge_offset">edge_offset_pref</string>
+    <string name="button_background_key">background_pref</string>
+
+    <string-array name="button_position_options">
+        <item>Top Left</item>
+        <item>Top Right</item>
+    </string-array>
+
+    <string-array name="button_position_values">
+        <item>TL</item>
+        <item>TR</item>
+    </string-array>
+
+    <string name="behaviour_keep_screen_on">keep_screen_on_pref</string>
+    <string name="behaviour_show_on_app_start">show_on_app_start_pref</string>
+</resources>

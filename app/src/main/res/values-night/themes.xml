@@ -1,0 +1,25 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primaryVariant</item>
+        <item name="colorOnPrimary">@color/onPrimary</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor" tools:targetApi="l">?attr/colorPrimaryVariant</item>
+        <!-- Customize your theme here. -->
+        <item name="colorControlActivated">@color/onPrimary</item>
+        <item name="colorAccent">@color/onPrimaryVariant</item>
+        <item name="alertDialogTheme">@style/DialogDarkStyle</item>
+
+        <item name="android:fontFamily">@font/product_sans_regular</item>
+    </style>
+
+    <style name="DialogDarkStyle" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:textColorPrimary">@color/onPrimary</item>
+        <item name="colorAccent">@color/onPrimaryVariant</item>
+        <item name="android:background">@color/primaryVariant</item>
+        <item name="android:colorBackground">@color/primaryVariant</item>
+        <item name="android:fontFamily">@font/product_sans_regular</item>
+    </style>
+</resources>
