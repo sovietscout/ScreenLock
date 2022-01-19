@@ -38,7 +38,7 @@ class ForegroundService : Service() {
 
         val stopSelf = Intent(this, ForegroundService::class.java).apply { action = "ACTION_STOP_SERVICE" }
         val pStopSelf = PendingIntent.getForegroundService(
-            this, 0, stopSelf, PendingIntent.FLAG_CANCEL_CURRENT)
+            this, 0, stopSelf, PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
         val notificationBuilder = NotificationCompat.Builder(this, notificationChannelID)
         val notification = notificationBuilder.setOngoing(true)
