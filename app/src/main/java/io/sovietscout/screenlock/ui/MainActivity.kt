@@ -1,12 +1,15 @@
 package io.sovietscout.screenlock.ui
 
+import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
+import android.util.Log
 import android.view.ContextThemeWrapper
 import android.view.Menu
 import android.widget.CompoundButton
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -25,6 +28,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var switchAB: SwitchMaterial
     private lateinit var dynamicShortcut: ShortcutInfoCompat
 
+    private var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) AppUtils.startForegroundService(this)
+        else Log.v(Constants.TAG, "Permission not granted")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -39,9 +47,8 @@ class MainActivity : AppCompatActivity() {
         if (!AppUtils.canDrawOverlays(this)) showDrawOverlaysAD()
 
         // Dynamic shortcuts
-        val dynamicShortcuts = ShortcutManagerCompat.getDynamicShortcuts(this)
-        if (dynamicShortcuts.isEmpty()) generateShortcut()
-        dynamicShortcut = dynamicShortcuts[0]
+        if (ShortcutManagerCompat.getDynamicShortcuts(this).isEmpty()) generateShortcut()
+        dynamicShortcut = ShortcutManagerCompat.getDynamicShortcuts(this)[0]
 
         supportFragmentManager.beginTransaction().replace(R.id.preferenceScreenFL, PreferenceScreenFragment()).commit()
     }
@@ -72,7 +79,7 @@ class MainActivity : AppCompatActivity() {
         .setTitle(R.string.menuAD_title)
         .setMessage(R.string.menuAD_text)
         .setPositiveButton(R.string.menuAD_pos) { _, _ ->
-            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))
+            resultLauncher.launch(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))
 
             Toast.makeText(this, "Find 'Screen Lock' and enable 'Allow display over other apps'",
                 Toast.LENGTH_LONG).show()
@@ -95,25 +102,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun addShortcut() {
-        if (ShortcutManagerCompat.isRequestPinShortcutSupported(this)) {
-            ShortcutManagerCompat.requestPinShortcut(this, dynamicShortcut, null)
-        } else {
-            Toast.makeText(this, "Pinning shortcuts not supported", Toast.LENGTH_LONG).show()
-        }
+        if (ShortcutManagerCompat.isRequestPinShortcutSupported(this)) ShortcutManagerCompat.requestPinShortcut(
+            this, dynamicShortcut, null)
+        else Toast.makeText(this, "Pinning shortcuts not supported", Toast.LENGTH_LONG).show()
     }
 
     fun refreshPreferenceFragment() =
         supportFragmentManager.beginTransaction().replace(R.id.preferenceScreenFL, PreferenceScreenFragment()).commit()
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onMessageEvent(event: String) { switchAB.isChecked = false }
+    fun onMessageEvent(event: Boolean?) { switchAB.isChecked = event!! }
 
     override fun onResume() {
         super.onResume()
 
         // Start overlay on app resume
         if (AppUtils.canDrawOverlays(this) && Settings(this).showOnAppStart && !ForegroundService.IS_SERVICE_RUNNING)
-            AppUtils.stopForegroundService(this)
+            AppUtils.startForegroundService(this)
     }
 
     override fun onDestroy() {
