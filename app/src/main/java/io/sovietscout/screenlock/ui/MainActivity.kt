@@ -32,15 +32,22 @@ class MainActivity : AppCompatActivity() {
 
         // Forced dark theme
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+
         setContentView(R.layout.activity_main)
 
         EventBus.getDefault().register(this)
 
         // If we cannot draw overlays, show Alert Dialog asking for permissions
+        if (!AppUtils.canDrawOverlays(this)) showDrawOverlaysAD()
+
+        /*
         if (AppUtils.canDrawOverlays(this)) {
-            if (Settings(this).showOnAppStart && !ForegroundService.IS_SERVICE_RUNNING)
+            if (Settings(this).showOnAppStart && !ForegroundService.IS_SERVICE_RUNNING) {
                 AppUtils.startForegroundService(this)
+            }
         } else showDrawOverlaysAD()
+
+         */
 
         // Dynamic shortcuts
         val dynamicShortcuts = ShortcutManagerCompat.getDynamicShortcuts(this)
@@ -52,14 +59,14 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu, menu)
-        val menuItem: MenuItem = menu!!.findItem(R.id.switch_ab)
-        switchAB = menuItem.actionView as SwitchMaterial
+        switchAB = menu!!.findItem(R.id.switch_ab).actionView as SwitchMaterial
 
         switchAB.isChecked = ForegroundService.IS_SERVICE_RUNNING
         switchAB.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
             if (isChecked) {
-                if (AppUtils.canDrawOverlays(this)) AppUtils.startForegroundService(this)
-                else {
+                if (AppUtils.canDrawOverlays(this)) {
+                    AppUtils.startForegroundService(this)
+                } else {
                     switchAB.isChecked = false
                     showDrawOverlaysAD()
                 }
@@ -107,6 +114,14 @@ class MainActivity : AppCompatActivity() {
 
     @Subscribe(threadMode = ThreadMode.MAIN)
     fun onMessageEvent(event: String) { switchAB.isChecked = false }
+
+    override fun onResume() {
+        super.onResume()
+
+        // Start overlay on app resume
+        if (AppUtils.canDrawOverlays(this) && Settings(this).showOnAppStart && !ForegroundService.IS_SERVICE_RUNNING)
+            AppUtils.stopForegroundService(this)
+    }
 
     override fun onDestroy() {
         EventBus.getDefault().unregister(this)
