@@ -9,8 +9,10 @@ class StartServiceActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        if (!ForegroundService.IS_SERVICE_RUNNING) AppUtils.startForegroundService(this)
-        else AppUtils.stopForegroundService(this)
+        if (!ForegroundService.IS_SERVICE_RUNNING)
+            AppUtils.startForegroundService(this)
+        else
+            AppUtils.stopForegroundService(this)
 
         finish()
     }

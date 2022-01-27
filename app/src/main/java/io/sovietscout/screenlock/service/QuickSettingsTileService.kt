@@ -19,29 +19,27 @@ class QuickSettingsTileService: TileService() {
 
         startActivityAndCollapse(serviceIntent)
 
-        when (qsTile.state) {
-            Tile.STATE_ACTIVE -> qsTile.state = Tile.STATE_INACTIVE
-            Tile.STATE_INACTIVE -> qsTile.state = Tile.STATE_ACTIVE
-            // Tile.STATE_UNAVAILABLE -> AppUtils.openMainActivity(this)
+        qsTile.state = when (qsTile.state) {
+            Tile.STATE_ACTIVE -> Tile.STATE_INACTIVE
+            Tile.STATE_INACTIVE -> Tile.STATE_ACTIVE
+            else -> Tile.STATE_UNAVAILABLE
         }
 
         qsTile.updateTile()
-
         Log.v(Constants.TAG, "Tile clicked")
     }
 
     override fun onStartListening() {
         super.onStartListening()
 
-        if (AppUtils.canDrawOverlays(this))
-            qsTile.state =
-                if (ForegroundService.IS_SERVICE_RUNNING) Tile.STATE_ACTIVE
-                else Tile.STATE_INACTIVE
-
-        else qsTile.state = Tile.STATE_UNAVAILABLE
+        if (AppUtils.canDrawOverlays(this)) {
+            qsTile.state = when (ForegroundService.IS_SERVICE_RUNNING) {
+                true -> Tile.STATE_ACTIVE
+                false -> Tile.STATE_INACTIVE
+            }
+        } else qsTile.state = Tile.STATE_UNAVAILABLE
 
         qsTile.updateTile()
-
         Log.v(Constants.TAG, "Tile state set")
     }
 
