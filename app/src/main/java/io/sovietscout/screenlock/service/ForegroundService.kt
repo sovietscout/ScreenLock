@@ -6,6 +6,8 @@ import android.content.Intent
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
+import io.sovietscout.screenlock.AppUtils
 import io.sovietscout.screenlock.Constants
 import io.sovietscout.screenlock.Overlay
 import io.sovietscout.screenlock.R
@@ -21,8 +23,8 @@ class ForegroundService : Service() {
     override fun onCreate() {
         super.onCreate()
 
-        IS_SERVICE_RUNNING = true
         overlay = Overlay(this)
+        IS_SERVICE_RUNNING = true
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -53,6 +55,7 @@ class ForegroundService : Service() {
         startForeground(1, notification)
         overlay.start()
 
+        EventBus.getDefault().post(true)
         Log.v(Constants.TAG, "Notification shown")
 
         return START_NOT_STICKY
@@ -62,14 +65,14 @@ class ForegroundService : Service() {
         overlay.stop()
         IS_SERVICE_RUNNING = false
 
-        EventBus.getDefault().post("The end is nigh. Close ye gates!")
+        EventBus.getDefault().post(false)
         Log.v(Constants.TAG, "Service stopped")
 
         super.onDestroy()
     }
 
     private fun createNotificationChannel() {
-        val channelName = "Background Service"
+        val channelName = "Foreground Service"
         val notificationChannel = NotificationChannel(
             notificationChannelID, channelName, NotificationManager.IMPORTANCE_MIN)
 
@@ -79,7 +82,5 @@ class ForegroundService : Service() {
         Log.v(Constants.TAG, "Notification channel created")
     }
 
-    companion object {
-        var IS_SERVICE_RUNNING = false
-    }
+    companion object { var IS_SERVICE_RUNNING = false }
 }
