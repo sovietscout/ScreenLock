@@ -30,6 +30,7 @@ class Overlay(private val context: Context) {
     private val alertDialog: AlertDialog
 
     private val mWMLPUtils: WMLPUtils
+    private val btnAnim = LockBtnAnim()
     private val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
     private val sharedPreferencesListener: SharedPreferences.OnSharedPreferenceChangeListener
@@ -74,8 +75,8 @@ class Overlay(private val context: Context) {
             if ((mView.windowToken == null) && (mView.parent == null)) {
                 mWindowManager.addView(mView, mWMLPUtils.getLP())
 
-                alertDialog.setOnShowListener { lockBtnFullAlpha() }
-                alertDialog.setOnDismissListener { if (isLocked) lockBtnFadeOut() }
+                alertDialog.setOnShowListener { btnAnim.fullAlpha() }
+                alertDialog.setOnDismissListener { if (isLocked) btnAnim.fadeOut() }
 
                 lockBtn.setOnClickListener { toggleLock() }
                 lockBtn.setOnLongClickListener {
@@ -83,7 +84,7 @@ class Overlay(private val context: Context) {
                     return@setOnLongClickListener true
                 }
 
-                mView.setOnClickListener { if (isLocked) lockBtnFadeIn() }
+                mView.setOnClickListener { if (isLocked) btnAnim.fadeIn() }
 
                 Log.v(Constants.TAG, "Overlay started")
             }
@@ -111,14 +112,14 @@ class Overlay(private val context: Context) {
             updateParams()
 
             lockBtn.icon = context.getDrawable(R.drawable.ic_lock)
-            lockBtnFadeOut()
+            btnAnim.fadeOut()
         } else {
             // Unlock state
             mWMLPUtils.lockState = Constants.SCREEN_STATE_UNLOCKED
             updateParams()
 
             lockBtn.icon = context.getDrawable(R.drawable.ic_unlock)
-            lockBtnFullAlpha()
+            btnAnim.fullAlpha()
         }
 
         Log.v(Constants.TAG, "Lock state toggled: ${if (isLocked) "Locked" else "Unlocked"}")
@@ -131,40 +132,34 @@ class Overlay(private val context: Context) {
         updateParams()
     }
 
-
-
-
-
-
-
-    private fun lockBtnFadeOut() {
-        // Fade out animation
-        lockBtn.animate().apply {
-            interpolator = LinearInterpolator()
-            duration = 200      // 0.2 seconds
-            startDelay = 2000   // 2 seconds
-            alpha(0f)
-            withEndAction { lockBtn.visibility = View.INVISIBLE }
-            start()
+    private inner class LockBtnAnim() {
+        fun fadeOut() {
+            lockBtn.animate().apply {
+                interpolator = LinearInterpolator()
+                duration = 200
+                startDelay = 2000
+                alpha(0f)
+                withEndAction { lockBtn.visibility = View.INVISIBLE }
+                start()
+            }
         }
-    }
 
-    private fun lockBtnFadeIn() {
-        // Fade in animation
-        lockBtnFullAlpha()
-        lockBtn.animate().apply {
-            startDelay = 0
-            withEndAction { lockBtnFadeOut() }
-            start()
+        fun fadeIn() {
+            fullAlpha()
+            lockBtn.animate().apply {
+                startDelay = 0
+                withEndAction { fadeOut() }
+                start()
+            }
         }
-    }
 
-    private fun lockBtnFullAlpha() {
-        lockBtn.apply {
-            visibility = View.VISIBLE
-            clearAnimation()
-            animate()?.cancel()
-            alpha = 1f
+        fun fullAlpha() {
+            lockBtn.apply {
+                visibility = View.VISIBLE
+                clearAnimation()
+                animate()?.cancel()
+                alpha = 1f
+            }
         }
     }
 }
