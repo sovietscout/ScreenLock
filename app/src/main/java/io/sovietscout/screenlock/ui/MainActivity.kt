@@ -3,10 +3,8 @@ package io.sovietscout.screenlock.ui
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.view.ContextThemeWrapper
 import android.view.Menu
-import android.view.MenuItem
 import android.widget.CompoundButton
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -25,7 +23,7 @@ import org.greenrobot.eventbus.ThreadMode
 
 class MainActivity : AppCompatActivity() {
     private lateinit var switchAB: SwitchMaterial
-    private lateinit var shortcutService: ShortcutInfoCompat
+    private lateinit var dynamicShortcut: ShortcutInfoCompat
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,19 +38,10 @@ class MainActivity : AppCompatActivity() {
         // If we cannot draw overlays, show Alert Dialog asking for permissions
         if (!AppUtils.canDrawOverlays(this)) showDrawOverlaysAD()
 
-        /*
-        if (AppUtils.canDrawOverlays(this)) {
-            if (Settings(this).showOnAppStart && !ForegroundService.IS_SERVICE_RUNNING) {
-                AppUtils.startForegroundService(this)
-            }
-        } else showDrawOverlaysAD()
-
-         */
-
         // Dynamic shortcuts
         val dynamicShortcuts = ShortcutManagerCompat.getDynamicShortcuts(this)
         if (dynamicShortcuts.isEmpty()) generateShortcut()
-        shortcutService = dynamicShortcuts[0]
+        dynamicShortcut = dynamicShortcuts[0]
 
         supportFragmentManager.beginTransaction().replace(R.id.preferenceScreenFL, PreferenceScreenFragment()).commit()
     }
@@ -62,13 +51,15 @@ class MainActivity : AppCompatActivity() {
         switchAB = menu!!.findItem(R.id.switch_ab).actionView as SwitchMaterial
 
         switchAB.isChecked = ForegroundService.IS_SERVICE_RUNNING
+
         switchAB.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
             if (isChecked) {
-                if (AppUtils.canDrawOverlays(this)) {
-                    AppUtils.startForegroundService(this)
-                } else {
-                    switchAB.isChecked = false
-                    showDrawOverlaysAD()
+                when (AppUtils.canDrawOverlays(this)) {
+                    true -> AppUtils.startForegroundService(this)
+                    false -> {
+                        switchAB.isChecked = false
+                        showDrawOverlaysAD()
+                    }
                 }
             } else AppUtils.stopForegroundService(this)
         }
@@ -82,9 +73,9 @@ class MainActivity : AppCompatActivity() {
         .setMessage(R.string.menuAD_text)
         .setPositiveButton(R.string.menuAD_pos) { _, _ ->
             startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))
-            Toast.makeText(
-                // Might also be called 'Appear on top'
-                this, "Find 'Screen Lock' and enable 'Allow display over other apps'", Toast.LENGTH_LONG).show()
+
+            Toast.makeText(this, "Find 'Screen Lock' and enable 'Allow display over other apps'",
+                Toast.LENGTH_LONG).show()
         }
         .create()
         .show()
@@ -105,8 +96,10 @@ class MainActivity : AppCompatActivity() {
 
     fun addShortcut() {
         if (ShortcutManagerCompat.isRequestPinShortcutSupported(this)) {
-            ShortcutManagerCompat.requestPinShortcut(this, shortcutService, null)
-        } else Toast.makeText(this, "Pinning shortcuts not supported", Toast.LENGTH_LONG).show()
+            ShortcutManagerCompat.requestPinShortcut(this, dynamicShortcut, null)
+        } else {
+            Toast.makeText(this, "Pinning shortcuts not supported", Toast.LENGTH_LONG).show()
+        }
     }
 
     fun refreshPreferenceFragment() =
