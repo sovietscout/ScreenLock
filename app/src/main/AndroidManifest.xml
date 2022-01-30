@@ -3,8 +3,8 @@
           xmlns:tools="http://schemas.android.com/tools"
           package="io.sovietscout.screenlock">
 
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
     <uses-permission android:name="android.permission.INSTALL_SHORTCUT"/>
 
     <application
@@ -35,9 +35,9 @@
 
         <activity
                 android:name=".ui.StartServiceActivity"
-                android:excludeFromRecents="true"
                 android:exported="true"
                 android:launchMode="singleInstance"
+                android:excludeFromRecents="true"
                 android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen">
         </activity>
 
