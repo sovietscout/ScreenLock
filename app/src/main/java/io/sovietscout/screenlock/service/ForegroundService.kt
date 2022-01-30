@@ -6,14 +6,13 @@ import android.content.Intent
 import android.os.IBinder
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
-import io.sovietscout.screenlock.AppUtils
-import io.sovietscout.screenlock.Constants
+import io.sovietscout.screenlock.AppUtils.TAG
 import io.sovietscout.screenlock.Overlay
 import io.sovietscout.screenlock.R
 import org.greenrobot.eventbus.EventBus
 
 private const val notificationChannelID = "screen_lock_notification_channel"
+private const val actionStopService = "ACTION_STOP_SERVICE"
 
 class ForegroundService : Service() {
     private lateinit var overlay: Overlay
@@ -22,14 +21,12 @@ class ForegroundService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-
         overlay = Overlay(this)
-        IS_SERVICE_RUNNING = true
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         // If intent action matches, remove notification and kill service
-        if ((intent != null) && (intent.action == "ACTION_STOP_SERVICE")) {
+        if ((intent != null) && (intent.action == actionStopService)) {
             stopForeground(true)
             stopSelf()
 
@@ -38,7 +35,7 @@ class ForegroundService : Service() {
 
         createNotificationChannel()
 
-        val stopSelf = Intent(this, ForegroundService::class.java).apply { action = "ACTION_STOP_SERVICE" }
+        val stopSelf = Intent(this, ForegroundService::class.java).apply { action = actionStopService }
         val pStopSelf = PendingIntent.getForegroundService(
             this, 0, stopSelf, PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE)
 
@@ -47,16 +44,17 @@ class ForegroundService : Service() {
             .setContentTitle(resources.getString(R.string.notification_title))
             .setContentText(resources.getString(R.string.notification_text))
             .setSmallIcon(R.drawable.ic_logo)
-            .setPriority(NotificationManager.IMPORTANCE_DEFAULT)
+            .setPriority(NotificationManager.IMPORTANCE_LOW)
             .setCategory(Notification.CATEGORY_SERVICE)
             .setContentIntent(pStopSelf)
             .build()
 
         startForeground(1, notification)
         overlay.start()
+        IS_SERVICE_RUNNING = true
 
         EventBus.getDefault().post(true)
-        Log.v(Constants.TAG, "Notification shown")
+        Log.v(TAG(), "Notification shown")
 
         return START_NOT_STICKY
     }
@@ -66,20 +64,21 @@ class ForegroundService : Service() {
         IS_SERVICE_RUNNING = false
 
         EventBus.getDefault().post(false)
-        Log.v(Constants.TAG, "Service stopped")
+        Log.v(TAG(), "Service stopped")
 
         super.onDestroy()
     }
 
     private fun createNotificationChannel() {
-        val channelName = "Foreground Service"
         val notificationChannel = NotificationChannel(
-            notificationChannelID, channelName, NotificationManager.IMPORTANCE_MIN)
+            notificationChannelID,
+            "Foreground Service",
+            NotificationManager.IMPORTANCE_MIN)
 
         val notificationManger = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationManger.createNotificationChannel(notificationChannel)
 
-        Log.v(Constants.TAG, "Notification channel created")
+        Log.v(TAG(), "Notification channel created")
     }
 
     companion object { var IS_SERVICE_RUNNING = false }
