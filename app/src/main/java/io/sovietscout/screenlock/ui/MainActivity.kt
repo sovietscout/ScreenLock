@@ -1,6 +1,5 @@
 package io.sovietscout.screenlock.ui
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
@@ -18,6 +17,7 @@ import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import com.google.android.material.switchmaterial.SwitchMaterial
 import io.sovietscout.screenlock.*
+import io.sovietscout.screenlock.AppUtils.TAG
 import io.sovietscout.screenlock.service.ForegroundService
 import org.greenrobot.eventbus.EventBus
 import org.greenrobot.eventbus.Subscribe
@@ -28,17 +28,19 @@ class MainActivity : AppCompatActivity() {
     private lateinit var switchAB: SwitchMaterial
     private lateinit var dynamicShortcut: ShortcutInfoCompat
 
-    private var resultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
-        if (result.resultCode == Activity.RESULT_OK) AppUtils.startForegroundService(this)
-        else Log.v(Constants.TAG, "Permission not granted")
+    private val intentLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        // Result code returned is always 0. Manually checking permission status on return
+
+        if (AppUtils.canDrawOverlays(this)) {
+            AppUtils.startForegroundService(this)
+            refreshPreferenceFragment()
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Forced dark theme
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
-
         setContentView(R.layout.activity_main)
 
         EventBus.getDefault().register(this)
@@ -53,11 +55,9 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction().replace(R.id.preferenceScreenFL, PreferenceScreenFragment()).commit()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu, menu)
-        switchAB = menu!!.findItem(R.id.switch_ab).actionView as SwitchMaterial
-
-        switchAB.isChecked = ForegroundService.IS_SERVICE_RUNNING
+        switchAB = menu.findItem(R.id.switch_ab).actionView as SwitchMaterial
 
         switchAB.setOnCheckedChangeListener { _: CompoundButton?, isChecked: Boolean ->
             if (isChecked) {
@@ -71,6 +71,8 @@ class MainActivity : AppCompatActivity() {
             } else AppUtils.stopForegroundService(this)
         }
 
+        switchAB.isChecked = ForegroundService.IS_SERVICE_RUNNING
+
         return true
     }
 
@@ -79,17 +81,20 @@ class MainActivity : AppCompatActivity() {
         .setTitle(R.string.menuAD_title)
         .setMessage(R.string.menuAD_text)
         .setPositiveButton(R.string.menuAD_pos) { _, _ ->
-            resultLauncher.launch(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))
-
             Toast.makeText(this, "Find 'Screen Lock' and enable 'Allow display over other apps'",
                 Toast.LENGTH_LONG).show()
+
+            permissionActivityLaunch()
         }
         .create()
         .show()
 
+    fun permissionActivityLaunch() = intentLauncher.launch(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))
+
     private fun generateShortcut() {
         val serviceIntent = Intent(this, StartServiceActivity::class.java)
             .setAction(Intent.ACTION_MAIN)
+            .putExtra(Constants.RUN_ON_RESUME, true)
 
         val shortcutInfo = ShortcutInfoCompat.Builder(this, "service-shortcut")
             .setIntent(serviceIntent)
@@ -99,6 +104,7 @@ class MainActivity : AppCompatActivity() {
             .build()
 
         ShortcutManagerCompat.setDynamicShortcuts(this, listOf(shortcutInfo))
+        Log.v(TAG(), "Shortcut generated")
     }
 
     fun addShortcut() {
@@ -111,14 +117,17 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction().replace(R.id.preferenceScreenFL, PreferenceScreenFragment()).commit()
 
     @Subscribe(threadMode = ThreadMode.MAIN)
-    fun onMessageEvent(event: Boolean?) { switchAB.isChecked = event!! }
+    fun onMessageEvent(event: Boolean?) { if (this::switchAB.isInitialized) switchAB.isChecked = event!! }
 
     override fun onResume() {
         super.onResume()
 
         // Start overlay on app resume
-        if (AppUtils.canDrawOverlays(this) && Settings(this).showOnAppStart && !ForegroundService.IS_SERVICE_RUNNING)
-            AppUtils.startForegroundService(this)
+        if (AppUtils.canDrawOverlays(this)
+            and Settings(this).showOnAppStart
+            and StartServiceActivity.RUN_ON_RESUME
+            and !ForegroundService.IS_SERVICE_RUNNING
+        ) AppUtils.startForegroundService(this)
     }
 
     override fun onDestroy() {
