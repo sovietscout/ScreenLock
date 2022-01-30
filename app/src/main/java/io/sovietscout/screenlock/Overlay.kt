@@ -11,6 +11,7 @@ import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.PreferenceManager
 import com.google.android.material.button.MaterialButton
+import io.sovietscout.screenlock.AppUtils.TAG
 
 
 class Overlay(private val context: Context) {
@@ -67,7 +68,7 @@ class Overlay(private val context: Context) {
 
         sharedPreferences.registerOnSharedPreferenceChangeListener(sharedPreferencesListener)
 
-        Log.v(Constants.TAG, "Overlay initialised")
+        Log.v(TAG(), "Overlay initialised")
     }
 
     fun start() {
@@ -86,9 +87,9 @@ class Overlay(private val context: Context) {
 
                 mView.setOnClickListener { if (isLocked) btnAnim.fadeIn() }
 
-                Log.v(Constants.TAG, "Overlay started")
+                Log.v(TAG(), "Overlay started")
             }
-        } catch (exception: Exception) { Log.e(Constants.TAG, "Exception at Overlay#start()", exception) }
+        } catch (exception: Exception) { Log.e(TAG(), "Exception at Overlay#start()", exception) }
     }
 
     fun stop() {
@@ -99,30 +100,33 @@ class Overlay(private val context: Context) {
             mWindowManager.removeView(mView)
             mView.invalidate()
 
-            Log.v(Constants.TAG, "Overlay stopped")
-        } catch (exception: Exception) { Log.e("Screen Lock", "Exception at Overlay#stop()", exception) }
+            Log.v(TAG(), "Overlay stopped")
+        } catch (exception: Exception) { Log.e(TAG(), "Exception at Overlay#stop()", exception) }
     }
 
     private fun toggleLock() {
         // Toggle lock state
 
-        if (mWMLPUtils.lockState == Constants.SCREEN_STATE_UNLOCKED) {
-            // Lock state
-            mWMLPUtils.lockState = Constants.SCREEN_STATE_LOCKED
-            updateParams()
+        when (mWMLPUtils.lockState) {
+            // Locked
+            Constants.SCREEN_STATE_UNLOCKED -> {
+                mWMLPUtils.lockState = Constants.SCREEN_STATE_LOCKED
+                updateParams()
 
-            lockBtn.icon = context.getDrawable(R.drawable.ic_lock)
-            btnAnim.fadeOut()
-        } else {
-            // Unlock state
-            mWMLPUtils.lockState = Constants.SCREEN_STATE_UNLOCKED
-            updateParams()
+                lockBtn.icon = context.getDrawable(R.drawable.ic_lock)
+                btnAnim.fadeOut()
+            }
+            // Unlocked
+            Constants.SCREEN_STATE_LOCKED -> {
+                mWMLPUtils.lockState = Constants.SCREEN_STATE_UNLOCKED
+                updateParams()
 
-            lockBtn.icon = context.getDrawable(R.drawable.ic_unlock)
-            btnAnim.fullAlpha()
+                lockBtn.icon = context.getDrawable(R.drawable.ic_unlock)
+                btnAnim.fullAlpha()
+            }
         }
 
-        Log.v(Constants.TAG, "Lock state toggled: ${if (isLocked) "Locked" else "Unlocked"}")
+        Log.v(TAG(), "Lock state toggled: ${if (isLocked) "Locked" else "Unlocked"}")
     }
 
     private fun updateParams() = mWindowManager.updateViewLayout(mView, mWMLPUtils.getLP())
