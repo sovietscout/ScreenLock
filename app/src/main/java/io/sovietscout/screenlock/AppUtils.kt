@@ -24,4 +24,6 @@ object AppUtils {
 
     fun canDrawOverlays(context: Context) = Settings.canDrawOverlays(context)
 
+    inline fun <reified T> T.TAG(): String = T::class.java.simpleName
+
 }
