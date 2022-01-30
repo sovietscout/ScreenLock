@@ -31,11 +31,11 @@
 
         <androidx.preference.ListPreference
                 android:title="Position"
-                android:summary=""
                 android:key="@string/button_position_key"
                 android:entries="@array/button_position_options"
                 android:entryValues="@array/button_position_values"
                 android:defaultValue="TL"
+                app:useSimpleSummaryProvider="true"
                 app:iconSpaceReserved="false"/>
 
         <androidx.preference.SeekBarPreference
