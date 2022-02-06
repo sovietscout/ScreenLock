@@ -11,6 +11,7 @@ import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.PreferenceManager
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.sovietscout.screenlock.AppUtils.TAG
 
 
@@ -46,7 +47,7 @@ class Overlay(private val context: Context) {
 
         mWMLPUtils = WMLPUtils(context, lockBtn, linearLayout)
 
-        val builder = AlertDialog.Builder(ContextThemeWrapper(context, R.style.DialogDarkStyle))
+        val builder = MaterialAlertDialogBuilder(context, R.style.DialogDarkStyle)
 
         builder.setTitle(R.string.buttonAD_title)
         builder.setPositiveButton(R.string.buttonAD_pos
