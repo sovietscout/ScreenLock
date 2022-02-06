@@ -70,7 +70,7 @@
                 android:title="Keep screen on"
                 android:summary="'Keep screen on' works without locking input"
                 android:key="@string/behaviour_keep_screen_on"
-                android:defaultValue="true"
+                android:defaultValue="false"
                 app:iconSpaceReserved="false"/>
 
     </androidx.preference.PreferenceCategory>
