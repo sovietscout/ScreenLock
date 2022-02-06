@@ -3,15 +3,17 @@
 
     <string name="toggle">Toggle Overlay</string>
 
+    <string name="shortcut_short_label">Toggle Overlay</string>
+    <string name="shortcut_long_label">Toggle Screen Lock Overlay</string>
+
     <string name="notification_title">Displaying over other apps</string>
     <string name="notification_text">Tap to close</string>
 
     <!-- Alert Dialog strings -->
 
     <string name="menuAD_title">Display over other apps</string>
-    <string name="menuAD_text">Overlay permission is required for the app to function. Please enable it in the next
-        screen
-    </string>
+    <string name="menuAD_text">The app requires overlay permissions to function. You may enable them in the next screen
+        </string>
     <string name="menuAD_pos">OK</string>
 
     <string name="buttonAD_title">Quick Settings</string>
