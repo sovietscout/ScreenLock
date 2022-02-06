@@ -1,65 +1,42 @@
 package io.sovietscout.screenlock.ui
 
-import android.content.Intent
-import android.content.SharedPreferences
 import android.os.Bundle
-import android.provider.Settings
-import androidx.preference.ListPreference
-import androidx.preference.Preference
-import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.PreferenceManager
+import androidx.preference.*
 import io.sovietscout.screenlock.AppUtils
 import io.sovietscout.screenlock.R
 
 
-class PreferenceScreenFragment: PreferenceFragmentCompat(), SharedPreferences.OnSharedPreferenceChangeListener {
+class PreferenceScreenFragment: PreferenceFragmentCompat() {
+    private lateinit var mainActivity: MainActivity
+
+    private lateinit var addShortcut: Preference
+    private lateinit var resetToDefaults: Preference
+    private lateinit var grantPermission: Preference
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        setPreferencesFromResource(R.xml.prefs, rootKey)
+        addPreferencesFromResource(R.xml.prefs)
 
-        // Add shortcut
-        (findPreference<Preference>("add_shortcut_pref"))?.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                (activity as MainActivity).addShortcut()
-                true
-            }
+        mainActivity = activity as MainActivity
 
-        // Reset to defaults
-        (findPreference<Preference>("reset_to_defaults_pref"))?.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                preferenceManager.sharedPreferences.edit().clear().apply()
-                PreferenceManager.setDefaultValues(this.context, R.xml.prefs, true)
+        addShortcut = findPreference("add_shortcut_pref")!!
+        resetToDefaults = findPreference("reset_to_defaults_pref")!!
+        grantPermission = findPreference("permission_pref")!!
 
-                (activity as MainActivity).refreshPreferenceFragment()
-                true
-            }
-
-        // Permission
-        val permissionPref = findPreference<Preference>("permission_pref")!!
-        if (!AppUtils.canDrawOverlays(this.context!!)) permissionPref.isEnabled = true
-        permissionPref.onPreferenceClickListener =
-            Preference.OnPreferenceClickListener {
-                startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION))
-                true
-            }
-
-        // Position
-        val positionPref = findPreference<ListPreference>(resources.getString(R.string.button_position_key))!!
-        positionPref.summary = positionPref.entry
+        if (!AppUtils.canDrawOverlays(this.context!!)) grantPermission.isEnabled = true
     }
 
-    override fun onSharedPreferenceChanged(p0: SharedPreferences?, p1: String?) {
-        val positionPref = findPreference<ListPreference>(resources.getString(R.string.button_position_key))!!
-        positionPref.summary = positionPref.entry
-    }
+    override fun onPreferenceTreeClick(preference: Preference): Boolean {
+        when (preference) {
+            addShortcut -> { mainActivity.addShortcutToHomeScreen() }
+            grantPermission -> { mainActivity.permissionActivityLaunch() }
+            resetToDefaults -> {
+                preferenceManager.sharedPreferences!!.edit().clear().apply()
+                PreferenceManager.setDefaultValues(this.context!!, R.xml.prefs, true)
 
-    override fun onResume() {
-        super.onResume()
-        preferenceManager.sharedPreferences.registerOnSharedPreferenceChangeListener(this)
-    }
+                mainActivity.refreshPreferenceFragment()
+            }
+        }
 
-    override fun onPause() {
-        preferenceManager.sharedPreferences.unregisterOnSharedPreferenceChangeListener(this)
-        super.onPause()
+        return true
     }
 }
