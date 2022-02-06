@@ -18,6 +18,7 @@
     <style name="DialogDarkStyle" parent="Theme.AppCompat.Dialog.Alert">
         <item name="android:textColorPrimary">@color/onPrimary</item>
         <item name="colorAccent">@color/onPrimaryVariant</item>
+        <item name="colorSurface">@color/primaryVariant</item>
         <item name="android:background">@color/primaryVariant</item>
         <item name="android:colorBackground">@color/primaryVariant</item>
         <item name="android:fontFamily">@font/product_sans_regular</item>
