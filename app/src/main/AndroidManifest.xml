@@ -52,6 +52,10 @@
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE_PREFERENCES"/>
             </intent-filter>
+
+            <meta-data android:name="android.app.shortcuts"
+                       android:resource="@xml/shortcuts" />
+
         </activity>
     </application>
 
