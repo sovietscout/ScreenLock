@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+            android:shortcutId="toggleOverlayShortcut"
+            android:enabled="true"
+            android:icon="@drawable/ic_lock"
+            android:shortcutShortLabel="@string/shortcut_short_label"
+            android:shortcutLongLabel="@string/shortcut_long_label">
+        <intent
+                android:action="android.intent.action.MAIN"
+                android:targetPackage="io.sovietscout.screenlock"
+                android:targetClass="io.sovietscout.screenlock.ui.StartServiceActivity" />
+    </shortcut>
+</shortcuts>
