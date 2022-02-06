@@ -80,11 +80,10 @@ class WMLPUtils(private val context: Context, private val lockBtn: MaterialButto
         }
 
         linearLayout.gravity = gravity
-        mLP.forEach {
-            it.gravity = gravity
-            it.x = 0
-            it.y = 0
-        }
+        // mLP.forEach {it.gravity = gravity }
+        unlockedLayoutParams.gravity = gravity
+
+        // TODO: Button jumps to top-left when button position is set to top-right on view layout update
     }
 
     private fun buttonSize(size: Int) {
